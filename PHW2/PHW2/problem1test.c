@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <pthread.h>
+#define NUM_THREADS 8
 
 struct thread_data
 {
@@ -14,6 +15,7 @@ struct thread_data
 	double **C; 
 	int n; 
 };
+struct thread_data thread_data_array[NUM_THREADS]; 
 void *Multiply(void *threadarg)
 {
 	struct thread_data * my_data;
@@ -36,35 +38,23 @@ void *Multiply(void *threadarg)
 
 }
 
-int main(int argc, char* argv[]){
+int main(void){
 		int i, j, k;
-		if(argc<2)
-		{
-			printf("not enough arguemnets\n");
-			return 1; 
-		}
-		int p = atoi(argv[1]);
 
-		printf("number of nodes are %d\n",p);
-
-
-		struct thread_data thread_data_array[p]; 
-
-		pthread_t threads[p]; 
+		pthread_t threads[NUM_THREADS]; 
 		pthread_attr_t attr;
-
-		pthread_attr_init(&attr);
-		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
 		struct timespec start, stop; 
 		double time;
-		int n = 4096; // matrix size is n*n
+		int n = 50; // matrix size is n*n
 		
 		double **A = (double**) malloc (sizeof(double*)*n);
 		double **B = (double**) malloc (sizeof(double*)*n);
 		double **C = (double**) malloc (sizeof(double*)*n);
 
-
+		double **A1 = (double**) malloc (sizeof(double*)*n);
+		double **B1 = (double**) malloc (sizeof(double*)*n);
+		double **C1 = (double**) malloc (sizeof(double*)*n);
 
 		pthread_attr_init(&attr);
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -74,7 +64,9 @@ int main(int argc, char* argv[]){
 			B[i] = (double*) malloc(sizeof(double)*n);
 			C[i] = (double*) malloc(sizeof(double)*n);
 
-
+			A1[i] = (double*) malloc(sizeof(double)*n);
+			B1[i] = (double*) malloc(sizeof(double)*n);
+			C1[i] = (double*) malloc(sizeof(double)*n);
 		}
 		
 		for (i=0; i<n; i++){
@@ -83,7 +75,9 @@ int main(int argc, char* argv[]){
 				B[i][j]=i+j;
 				C[i][j]=0;	
 
-			
+				A1[i][j]=i;
+				B1[i][j]=i+j;
+				C1[i][j]=0;				
 			}
 		}
 				
@@ -93,11 +87,11 @@ int main(int argc, char* argv[]){
 		// Matrix C = Matrix A * Matrix B //	
 		//*******************************//
 		int tt, rc;
-		for(tt = 0; tt< p; tt++)
+		for(tt = 0; tt< NUM_THREADS; tt++)
 		{
 			thread_data_array[tt].thread_id = tt;
-			thread_data_array[tt].startIndex = tt*n/p; 
-			thread_data_array[tt].endIndex = (tt+1)*n/p-1; 			
+			thread_data_array[tt].startIndex = tt*n/NUM_THREADS; 
+			thread_data_array[tt].endIndex = (tt+1)*n/NUM_THREADS-1; 			
 
 			thread_data_array[tt].A = A;
 			thread_data_array[tt].B = B;
@@ -112,7 +106,7 @@ int main(int argc, char* argv[]){
 			}
 		}
 		pthread_attr_destroy(&attr);
-		for(tt = 0; tt< p; tt++)
+		for(tt = 0; tt< NUM_THREADS; tt++)
 		{
 			rc = pthread_join(threads[tt],NULL); 
 			if(rc)
@@ -122,8 +116,41 @@ int main(int argc, char* argv[]){
 			}			 
 		}		
 
+		for(i=0; i<n; i++)
+		{
+			for(j=0; j<n; j++)
+			{
+				for(k=0; k<n; k++)
+				{
+					C1[i][j]+=A1[i][k]*B1[k][j]; 
+				}
+			}
+		}
 
+		int same = 1;
+		double diff; 
+		for(i=0; i<n; i++)
+		{
+			for(j=0; j<n; j++)
+			{
+				diff = C1[i][j]-C[i][j];
+				if(diff>0.001)
+				{
+					same = 0;
+					
+				} 
+			}
+		}
 
+		if(same)
+		{
+			printf("matrices match\n");
+		}
+		else
+		{
+			printf("matrices don't match\n");
+
+		}
 		
 		//*******************************///
 		
