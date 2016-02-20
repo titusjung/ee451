@@ -1,0 +1,34 @@
+report
+
+problem 1:
+	1:
+	4:
+	number of nodes are 4
+Number of FLOPs = 137438953472, Execution time = 324.052743 sec,
+424.125258 MFLOPs per sec
+C[100][100]=879616000.000000
+
+	8: 
+		Number of FLOPs = 137438953472, Execution time = 272.767357 sec,
+		503.868772 MFLOPs per sec
+		C[100][100]=879616000.000000
+	16: 
+		Number of FLOPs = 137438953472, Execution time = 328.507655 sec,
+		418.373671 MFLOPs per sec
+		C[100][100]=879616000.000000
+
+	64:
+	number of nodes are 64
+Number of FLOPs = 137438953472, Execution time = 322.059608 sec,
+426.750049 MFLOPs per sec
+C[100][100]=879616000.000000
+
+	256:
+	number of nodes are 256
+Number of FLOPs = 137438953472, Execution time = 320.035304 sec,
+429.449350 MFLOPs per sec
+C[100][100]=879616000.000000
+
+
+problem 2:
+
