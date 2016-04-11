@@ -1,0 +1,14 @@
+Report:
+Titus Jung
+
+1.
+	serial 0.669376
+	for:   0.197271
+	sections:  1.264601 
+	I am not show how the sections code is slower than the rest;
+2.
+	serial:2.777633
+	parallel:  2.393885 
+	the code i used was based on the pseudo code on wikipedia. I hope that i allowable; 
+	Also the parallel code does not fully work. The random number generation causes 
+	the sort to either fail or succeed in some instances. 

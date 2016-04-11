@@ -1,0 +1,35 @@
+Titus Jung
+7935664176
+titusjun@usc.edu
+
+To compile: $make all
+
+
+1.
+to run 1a
+    $./p1a
+to run 1b
+    $./p1b 
+    Observation:
+    Algorithm went as expected. The thread scheduling for HPCC seems to give more 
+    time per thread than I initially expected. 
+    For part b.
+    Since HPCC gives a lot of time to threads, the producer typically fills up
+    the shelf without being interrupted or contexted switched out. It also means 
+    that 1 consumer empties the shelf before another consumer gets a chance. 
+2.
+to run:
+    $./p2 <# number of threads you want to use>
+    
+    4 threads: 1.324458 
+    8 threads:  0.840878
+
+    previous hw
+    4: Execution time = 1.733094 
+    8:   1.420642 
+
+
+    Observations: These times are about the slighlty faster than phw2's.  This goes against my inital
+    prediction since I thought that sleeping the threads and having one thread calculate all the 
+    clusters would be almost the same as joining threads. I guess I underestimated the overhead for
+    joining threads. 

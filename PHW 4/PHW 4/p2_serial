@@ -1,0 +1,93 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <iostream>
+#define		size	  16*1024*1024
+
+
+void swap(int *arr, int aIndex, int bIndex)
+{
+	int temp = arr[aIndex];
+	arr[aIndex] = arr[bIndex];
+	arr[bIndex] = temp;
+
+}
+
+int partition(int* arr, int start, int end, int pivotIndex)
+{
+	if (!(pivotIndex>start && pivotIndex<end)) return -1;
+	int pivot = arr[pivotIndex];
+	int i, j, k;
+	i = start;
+	j = end-1;
+	while (true)
+	{
+		while (arr[i] <= pivot && i < end) { i++; }
+		while (arr[j]>pivot && j>=start) { j--; }
+		if (i >= j) break;
+		swap(arr, i, j);
+	}
+	//swap(arr, i, pivotIndex);
+	//printArr(arr, start, end);
+	return j;
+}
+
+void quickSort(int *arr, int start, int end)
+{
+	if (start<end)
+	{
+		int pivotIndex = (end - start) / 2 + start; 
+		int p = partition(arr, start, end,  pivotIndex);
+		if (p == -1) return;
+		quickSort(arr, start, p);
+		quickSort(arr, p + 1, end);
+	}
+}
+
+
+int main(void) {
+	int i, j, tmp;
+	struct timespec start, stop;
+	double exe_time;
+	srand(time(NULL));
+	int * m = (int *)malloc(sizeof(int)*size);
+	for (i = 0; i<size; i++) {
+		m[i] = size - i;
+	}
+	int teststart = 0;
+	int testend = size;
+	////////**********Your code goes here***************//
+
+	quickSort(m, teststart, testend);
+	printf("\ndone\n");
+
+	///////******************************////
+
+	int fail = 0;
+
+	for (i = teststart + 1; i<testend; i++)
+	{
+		if (m[i - 1]>m[i])
+		{
+			fail = 1;
+			break;
+		}
+	}
+	if (!fail)
+	{
+		printf("\n Quicksort success!\n");
+
+	}
+	else
+	{
+		printf("\n Quicksort FAIL\n");
+		//free(m);
+		// return;
+	}
+	//printArr(m, teststart, testend);
+	for (i = 0;i<16;i++) printf("%d ", m[i]);
+	free(m);
+
+	return 1;
+
+}

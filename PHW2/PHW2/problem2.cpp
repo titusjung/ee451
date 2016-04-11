@@ -3,21 +3,20 @@
 #include <math.h>
 #include <omp.h>
 #include <time.h>
-#include <pthread.h>
 
-#define h  1024 
-#define w  1024
+#define h  800 
+#define w  800
 #define nClusters 6
 #define nRuns 50
 
 #define input_file  "input.raw"
 #define output_file "output.raw"
 
-unsigned char *a;
-double uArray[nClusters]; 
 
 
-int indexToClosestu(int element);
+
+unsigned char *a; 
+int indexToClosestu(int element, double uArray[nClusters]);
 
 struct thread_data
 {
@@ -25,9 +24,9 @@ struct thread_data
 	int startIndex;
 	int endIndex; 
 
-	volatile double sumArray[nClusters];
-	volatile double noArray[nClusters];
-
+	double sumArray[nClusters];
+	double noArray[nClusters];
+	double uArray[nClusters];
 }; 
 
 void* processArray(void *threadarg )
@@ -35,23 +34,19 @@ void* processArray(void *threadarg )
 	struct thread_data * my_data;
 	my_data = (struct thread_data *) threadarg; 
 	int i;
-	/*
 	for(i=0; i<nClusters; i++)
 	{
-		my_data->sumArray[i]=0;
-		my_data->noArray[i]=0; 
-	}
-*/
-	for(i=my_data->startIndex;i<=my_data->endIndex; i++)
+		sumArray[i]=0;
+		noArray[i]=0; 
+	}	
+	for(i=startIndex;i<endIndex; i++)
 	{
 		int element = a[i];
-		int clusterIndex = indexToClosestu(element);
-		my_data->sumArray[clusterIndex]+=element; 
-		my_data->noArray[clusterIndex]++; 
+		int clusterIndex = 
 	}
 }
 
-int indexToClosestu(int element)
+int indexToClosestu(int element, double uArray[nClusters])
 {
 	double diff =fabs(element-uArray[0]); 
 	int index =0;
@@ -63,10 +58,11 @@ int indexToClosestu(int element)
 		{
 			index =i;
 			diff = tempDiff;
-
 		}
 	}
+
 	return index; 
+
 }
 
 
@@ -75,23 +71,13 @@ int main(int argc, char** argv){
    int i,j,k;
     FILE *fp;
 
-    //int p =4; 
-
-	pthread_attr_t attr;
-
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-
+	int i, j, k;
 	if(argc<2)
 	{
 		printf("not enough arguemnets\n");
 		return 1; 
 	}
 	int p = atoi(argv[1]);
-
-	volatile struct thread_data thread_data_array[p]; 
-
-	pthread_t threads[p]; 
 
   	a = (unsigned char*) malloc (sizeof(unsigned char)*h*w);
     
@@ -109,6 +95,7 @@ int main(int argc, char** argv){
 	double time;		
 	if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
 
+	double uArray[nClusters]; 
 
 	uArray[0] =0; 
 	uArray[1] =65; 
@@ -117,58 +104,28 @@ int main(int argc, char** argv){
 	uArray[4] = 190;
 	uArray[5] =255; 
 
-	volatile double sumArray[nClusters];
-	volatile double noArray[nClusters];
+	double sumArray[nClusters];
+	double noArray[nClusters];
 
 	for(i=0; i<nClusters; i++)
 	{
 		sumArray[i]=0; 
 		noArray[i]=0 ; 
-		for(j=0; j<p; j++)
-		{
-			thread_data_array[j].sumArray[i]=0; 
-			thread_data_array[j].noArray[i]=0; 
-		}
-
 	}
 
 
-	int tt, rc; 
+
 
 	for(i=0; i<nRuns; i++)
 	{
-		for(j=0; j<p; j++)
+		for(j=0; j<h*w; j++)
 		{
-			thread_data_array[j].thread_id = j;
-			thread_data_array[j].startIndex = j*w*h/p; 
-			thread_data_array[j].endIndex = (j+1)*w*h/p-1; 	
 
-			rc = pthread_create(&threads[j],&attr,processArray,(void *) &thread_data_array[j]);
-			if(rc)
-			{
-				printf("ERROR; return code from pthread_create() is%d\n", rc);
-				exit(-1); 
-			}
-		}
-		for(tt = 0; tt< p; tt++)
-		{
-			rc = pthread_join(threads[tt],NULL); 
-			if(rc)
-			{
-				printf("ERROR; joining thread error return code from pthread_create() is%d\n", rc);
-				exit(-1); 
-			}			 
-		}
-		for(tt = 0; tt< p; tt++)
-		{
-			for(j=0; j<nClusters; j++)
-			{
-				//uArray[j] = (double)thread_data_array[tt].sumArray[j]/(double) thread_data_array[tt].noArray[j]; 
-				sumArray[j]+=thread_data_array[tt].sumArray[j]; 
-				noArray[j]+=thread_data_array[tt].noArray[j]; 
-				thread_data_array[tt].sumArray[j]=0; 
-				thread_data_array[tt].noArray[j]=0; 
-			}
+				int element = a[j];
+				int clusterIndex = indexToClosestu(element, uArray);
+				sumArray[clusterIndex]+=element; 
+				noArray[clusterIndex]++; 
+			
 		}
 
 		for(j=0; j<nClusters; j++)
@@ -177,17 +134,15 @@ int main(int argc, char** argv){
 			sumArray[j]=0; 
 			noArray[j]=0 ; 
 		}
-
 	}
-	pthread_attr_destroy(&attr);
-
+		
 	//
 	for(j=0; j<h*w; j++)
 	{
 
-		int element = a[j];
-		int clusterIndex = indexToClosestu(element);
-		a[j]=uArray[clusterIndex]; 
+			int element = a[j];
+			int clusterIndex = indexToClosestu(element, uArray);
+			a[j]=uArray[clusterIndex]; 
 		
 	}	
 	// measure the end time here
